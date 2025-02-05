@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Market Data Filter</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<style>
+    body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 60%;
+    margin: 50px auto;
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    text-align: center;
+    color: #333;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+select, button {
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+select {
+    background-color: #fff;
+}
+
+button {
+    background-color: #28a745;
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s ease;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+th {
+    background-color: #007bff;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 90%;
+    }
+
+    form {
+        flex-direction: column;
+    }
+}
+
+</style>
+<body>
+    <div class="container">
+        <h2>Filter Market Data</h2>
+        <form method="POST" action="/get_data">
+            <label for="state">Select State:</label>
+            <select name="state" id="state" required>
+                <option value="">--Select State--</option>
+                {% for state in states %}
+                    <option value="{{ state }}">{{ state }}</option>
+                {% endfor %}
+            </select>
+
+            <label for="district">Select District:</label>
+            <select name="district" id="district" required>
+                <option value="">--Select District--</option>
+            </select>
+
+            <button type="submit">Get Data</button>
+        </form>
+
+        {% if data %}
+            <h3>Market Data Results</h3>
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>State</th>
+                        <th>District</th>
+                        <th>Market</th>
+                        <th>Commodity</th>
+                        <th>Variety</th>
+                        <th>Grade</th>
+                        <th>Min Price</th>
+                        <th>Max Price</th>
+                        <th>Modal Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in data %}
+                        <tr>
+                            <td>{{ record['state'] }}</td>
+                            <td>{{ record['district'] }}</td>
+                            <td>{{ record['market'] }}</td>
+                            <td>{{ record['commodity'] }}</td>
+                            <td>{{ record.get('variety', 'N/A') }}</td>
+                            <td>{{ record.get('grade', 'N/A') }}</td>
+                            <td>{{ record.get('min_price', 'N/A') }}</td>
+                            <td>{{ record.get('max_price', 'N/A') }}</td>
+                            <td>{{ record.get('modal_price', 'N/A') }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#state').change(function() {
+                var state = $(this).val();
+                $('#district').html('<option value="">--Loading districts--</option>');
+
+                $.ajax({
+                    type: "POST",
+                    url: "/get_districts",
+                    contentType: "application/json",
+                    data: JSON.stringify({ "state": state }),
+                    success: function(response) {
+                        $('#district').html('<option value="">--Select District--</option>');
+                        $.each(response, function(index, value) {
+                            $('#district').append('<option value="' + value + '">' + value + '</option>');
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
