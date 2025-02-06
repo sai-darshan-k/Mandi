@@ -5,172 +5,296 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Market Data Filter</title>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 15px;
+        }
+
+        .container {
+            width: 95%;
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            transition: 0.3s ease;
+            margin-top: 10px;
+        }
+
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #218838;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin: 20px -15px;
+            padding: 0 15px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px 8px;
+            text-align: left;
+            font-size: 14px;
+        }
+
+        th {
+            background-color: #007bff;
+            color: white;
+            white-space: nowrap;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        .note {
+            margin-top: 20px;
+            padding: 12px;
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            font-size: 14px;
+            color: #333;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .note a {
+            color: #0056b3;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .note a:hover {
+            text-decoration: underline;
+        }
+
+        .loading {
+            display: none;
+            color: #666;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #007bff;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            .container {
+                width: 100%;
+                padding: 12px;
+                margin: 10px auto;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+
+            select, button {
+                padding: 10px;
+                font-size: 15px;
+            }
+
+            th, td {
+                padding: 8px 6px;
+                font-size: 13px;
+            }
+
+            .note {
+                font-size: 13px;
+                padding: 10px;
+            }
+        }
+    </style>
 </head>
-<style>
-    body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f4f4;
-    margin: 0;
-    padding: 0;
-}
-
-.container {
-    width: 60%;
-    margin: 50px auto;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-}
-
-h2 {
-    text-align: center;
-    color: #333;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-}
-
-label {
-    font-weight: bold;
-    margin-bottom: 5px;
-}
-
-select, button {
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-select {
-    background-color: #fff;
-}
-
-button {
-    background-color: #28a745;
-    color: white;
-    cursor: pointer;
-    font-weight: bold;
-    transition: 0.3s ease;
-}
-
-button:hover {
-    background-color: #218838;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-}
-
-table, th, td {
-    border: 1px solid #ddd;
-}
-
-th, td {
-    padding: 10px;
-    text-align: left;
-}
-
-th {
-    background-color: #007bff;
-    color: white;
-}
-
-tr:nth-child(even) {
-    background-color: #f2f2f2;
-}
-
-@media (max-width: 768px) {
-    .container {
-        width: 90%;
-    }
-
-    form {
-        flex-direction: column;
-    }
-}
-
-</style>
 <body>
     <div class="container">
-        <h2>Filter Market Data</h2>
+        <h2>Real-Time Commodity Information</h2>
         <form method="POST" action="/get_data">
-            <label for="state">Select State:</label>
-            <select name="state" id="state" required>
-                <option value="">--Select State--</option>
-                {% for state in states %}
-                    <option value="{{ state }}">{{ state }}</option>
-                {% endfor %}
-            </select>
+            <div>
+                <label for="state">Select State:</label>
+                <select name="state" id="state" required>
+                    <option value="">--Select State--</option>
+                    {% for state in states %}
+                        <option value="{{ state }}">{{ state }}</option>
+                    {% endfor %}
+                </select>
+            </div>
 
-            <label for="district">Select District:</label>
-            <select name="district" id="district" required>
-                <option value="">--Select District--</option>
-            </select>
+            <div>
+                <label for="district">Select District:</label>
+                <select name="district" id="district" required disabled>
+                    <option value="">--Select District--</option>
+                </select>
+                <div class="loading"><span class="spinner"></span>Loading districts...</div>
+            </div>
 
-            <button type="submit">Get Data</button>
+            <button type="submit" disabled>Get Data</button>
         </form>
 
         {% if data %}
-            <h3>Market Data Results</h3>
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>State</th>
-                        <th>District</th>
-                        <th>Market</th>
-                        <th>Commodity</th>
-                        <th>Variety</th>
-                        <th>Grade</th>
-                        <th>Min Price</th>
-                        <th>Max Price</th>
-                        <th>Modal Price</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in data %}
+            <div class="table-container">
+                <table>
+                    <thead>
                         <tr>
-                            <td>{{ record['state'] }}</td>
-                            <td>{{ record['district'] }}</td>
-                            <td>{{ record['market'] }}</td>
-                            <td>{{ record['commodity'] }}</td>
-                            <td>{{ record.get('variety', 'N/A') }}</td>
-                            <td>{{ record.get('grade', 'N/A') }}</td>
-                            <td>{{ record.get('min_price', 'N/A') }}</td>
-                            <td>{{ record.get('max_price', 'N/A') }}</td>
-                            <td>{{ record.get('modal_price', 'N/A') }}</td>
+                            <th>State</th>
+                            <th>District</th>
+                            <th>Market</th>
+                            <th>Commodity</th>
+                            <th>Variety</th>
+                            <th>Grade</th>
+                            <th>Arrival Date</th>
+                            <th>Min Price</th>
+                            <th>Max Price</th>
+                            <th>Modal Price</th>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for record in data %}
+                            <tr>
+                                <td>{{ record['state'] }}</td>
+                                <td>{{ record['district'] }}</td>
+                                <td>{{ record['market'] }}</td>
+                                <td>{{ record['commodity'] }}</td>
+                                <td>{{ record.get('variety', 'N/A') }}</td>
+                                <td>{{ record.get('grade', 'N/A') }}</td>
+                                <td>{{ record.get('arrival_date', 'N/A') }}</td>
+                                <td>{{ record.get('min_price', 'N/A') }}</td>
+                                <td>{{ record.get('max_price', 'N/A') }}</td>
+                                <td>{{ record.get('modal_price', 'N/A') }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
+
+        <div class="note">
+            <strong>Note:</strong> Real-time information is only available for updated market commodities. Other information will be available until the evening.  
+            For more details, click <a href="https://agmarknet.gov.in/PriceAndArrivals/CommodityDailyStateWise.aspx" target="_blank">here</a>.
+        </div>
     </div>
 
     <script>
         $(document).ready(function() {
-            $('#state').change(function() {
-                var state = $(this).val();
-                $('#district').html('<option value="">--Loading districts--</option>');
+            const $stateSelect = $('#state');
+            const $districtSelect = $('#district');
+            const $submitButton = $('button[type="submit"]');
+            const $loading = $('.loading');
 
-                $.ajax({
-                    type: "POST",
-                    url: "/get_districts",
-                    contentType: "application/json",
-                    data: JSON.stringify({ "state": state }),
-                    success: function(response) {
-                        $('#district').html('<option value="">--Select District--</option>');
-                        $.each(response, function(index, value) {
-                            $('#district').append('<option value="' + value + '">' + value + '</option>');
-                        });
-                    }
-                });
+            // Enable/disable submit button based on selections
+            function updateSubmitButton() {
+                $submitButton.prop('disabled', 
+                    !$stateSelect.val() || !$districtSelect.val()
+                );
+            }
+
+            $stateSelect.change(function() {
+                const state = $(this).val();
+                $districtSelect.prop('disabled', true);
+                $districtSelect.html('<option value="">--Select District--</option>');
+                updateSubmitButton();
+
+                if (state) {
+                    $loading.show();
+                    
+                    $.ajax({
+                        type: "POST",
+                        url: "/get_districts",
+                        contentType: "application/json",
+                        data: JSON.stringify({ "state": state }),
+                        success: function(response) {
+                            $districtSelect.html('<option value="">--Select District--</option>');
+                            response.forEach(function(district) {
+                                $districtSelect.append(
+                                    $('<option></option>').val(district).text(district)
+                                );
+                            });
+                            $districtSelect.prop('disabled', false);
+                        },
+                        error: function() {
+                            alert("Error fetching districts. Please try again.");
+                        },
+                        complete: function() {
+                            $loading.hide();
+                        }
+                    });
+                }
             });
+
+            $districtSelect.change(updateSubmitButton);
         });
     </script>
 </body>
